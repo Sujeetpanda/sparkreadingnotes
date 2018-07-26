@@ -1,0 +1,155 @@
+val airlines = sc.textFile("/tmp/sujeet/airlines.csv")
+val airports = sc.textFile("/tmp/sujeet/airports.csv")
+val flights = sc.textFile("/tmp/sujeet/flights.csv")
+
+
+
+import org.joda.time._
+import org.joda.time.format._
+import org.joda.time.LocalTime
+import org.joda.time.LocalDate
+
+case class Flight(date: LocalDate,
+                  airline: String ,
+                  flightnum: String,
+                  origin: String ,
+                  dest: String ,
+                  dep: LocalTime,
+                  dep_delay: Double,
+                  arv: LocalTime,
+                  arv_delay: Double ,
+                  airtime: Double ,
+                  distance: Double
+                   )
+
+def parse(row: String): Flight={
+
+  val fields = row.split(",")
+  val datePattern = DateTimeFormat.forPattern("YYYY-mm-dd")
+  val timePattern = DateTimeFormat.forPattern("HHmm")
+
+  val date: LocalDate = datePattern.parseDateTime(fields(0)).toLocalDate()
+  val airline: String = fields(1)
+  val flightnum: String = fields(2)
+  val origin: String = fields(3)
+  val dest: String = fields(4)
+  val dep: LocalTime = timePattern.parseDateTime(fields(5)).toLocalTime()
+  val dep_delay: Double = fields(6).toDouble
+  val arv: LocalTime = timePattern.parseDateTime(fields(7)).toLocalTime()
+  val arv_delay: Double = fields(8).toDouble
+  val airtime: Double = fields(9).toDouble
+  val distance: Double = fields(10).toDouble
+  
+  Flight(date,airline,flightnum,origin,dest,dep,
+         dep_delay,arv,arv_delay,airtime,distance)
+
+    }
+
+val flights=sc.textFile(flightsPath)
+flights
+flights.count()
+flights.first()
+val totalDistance=flightsParsed.map(_.distance).reduce((x,y) => x+y)
+val avgDistance=totalDistance/flightsParsed.count()
+println(avgDistance)
+
+
+val scorsperplaye = sc.parallelize(List(("Sachin",100),("Sachin",125),("Sachin",123),("Dravid",234),("Dravid",123),("Dravid",223),("Dada",92),("Dada",192),("Dada",189)))
+
+
+Annagram of a string:
+
+	
+
+val names = List("cat","tac","act","dog","god")
+val rdd = sc.parallelize(names)
+
+scala> def getSortedString(str: String): String = {
+     | val arr = str.toCharArray()
+     | scala.util.Sorting.quickSort(arr)
+     | return arr.mkString("")
+     | }
+getSortedString: (str: String)String
+
+
+val mappledRdd = rdd.map(x => (getSortedString(x),x))
+val reducedval = mappledRdd.reduceByKey((x,y) => (x +","+ y))
+
+
+
+Spark streaming:
+
+import org.apache.spark._
+import org.apache.spark.streaming._
+import org.apache.spark.streaming.StreamingContext._
+import scala.collection.mutable.ArrayBuffer
+
+val ssc = new StreamingContext(sc,Seconds(2))
+val input=ssc.textFileStream("/tmp/data.json")
+input.print()
+val arr = new ArrayBuffer[String]();
+ssc.start()
+ssc.awaitTermination()
+
+
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import StreamingContext._
+import org.apache.hadoop.conf._
+import org.apache.hadoop.fs._
+ 
+ 
+/**
+ * Counts words in new text files created in the given directory
+ * Usage: HdfsWordCount <directory>
+ *   <directory> is the directory that Spark Streaming will use to find and read new text files.
+ *
+ * To run this on your local machine on directory `localdir`, run this example
+ *    $ bin/run-example \
+ *       org.apache.spark.examples.streaming.HdfsWordCount localdir
+ *
+ * Then create a text file in `localdir` and the words in the file will get counted.
+ */
+object HdfsWordCount {
+  def main(args: Array[String]) {
+    if (args.length < 1) {
+      System.err.println("Usage: HdfsWordCount <directory>")
+      System.exit(1)
+    }
+ 
+    //StreamingExamples.setStreamingLogLevels()
+    val sparkConf = new SparkConf().setAppName("HdfsWordCount")
+    // Create the context
+    val ssc = new StreamingContext(sparkConf, Seconds(2))
+ 
+    // Create the FileInputDStream on the directory and use the
+    // stream to count words in new files created
+    val lines = ssc.textFileStream(args(0))
+    val words = lines.flatMap(_.split(" "))
+    val wordCounts = words.map(x => (x, 1)).reduceByKey(_ + _)
+    wordCounts.print()
+    ssc.start()
+    ssc.awaitTermination()
+  }
+}
+From spark-shell, first stop the current spark context
+
+1
+sc.stop()
+Create an HDFS directory “/user/cloudera/sparkStreaming” where you will add your incoming files (this can be done from the unix command line (hadoop fs -mkdir /user/cloudera/sparkStreaming) or from the Hue web interface (available from the browser at http://quickstart.cloudera:8888).
+
+Then, from spark-shell run the program.
+
+1
+HdfsWordCount.main(Array('hdfs://quickstart.cloudera:8020/user/cloudera/sparkStreaming/'))
+Note that the host and port may not be needed if the namenode is set, then it becomes
+
+1
+HdfsWordCount.main(Array('hdfs:///user/cloudera/sparkStreaming/'))
+At this point, you should see INFO lines showing up in the spark-shell and refreshing every 2s.
+Now it is time to add a file into /user/cloudera/sparkStreaming. Again you can do it from the command line (hadoop fs -put <localsrc> ... <HDFS_dest_Path>) or from Hue.
+Once you have added a file into the HDFS directory, you should see in the spark shell the words of the file you just added being counted. As illustration, here is what I got after adding some LICENSE file.
+
+
+
+
