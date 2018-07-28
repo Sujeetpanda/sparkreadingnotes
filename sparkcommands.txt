@@ -136,7 +136,7 @@ From spark-shell, first stop the current spark context
 
 1
 sc.stop()
-Create an HDFS directory ì/user/cloudera/sparkStreamingî where you will add your incoming files (this can be done from the unix command line (hadoop fs -mkdir /user/cloudera/sparkStreaming) or from the Hue web interface (available from the browser at http://quickstart.cloudera:8888).
+Create an HDFS directory ‚Äú/user/cloudera/sparkStreaming‚Äù where you will add your incoming files (this can be done from the unix command line (hadoop fs -mkdir /user/cloudera/sparkStreaming) or from the Hue web interface (available from the browser at http://quickstart.cloudera:8888).
 
 Then, from spark-shell run the program.
 
@@ -150,6 +150,29 @@ At this point, you should see INFO lines showing up in the spark-shell and refre
 Now it is time to add a file into /user/cloudera/sparkStreaming. Again you can do it from the command line (hadoop fs -put <localsrc> ... <HDFS_dest_Path>) or from Hue.
 Once you have added a file into the HDFS directory, you should see in the spark shell the words of the file you just added being counted. As illustration, here is what I got after adding some LICENSE file.
 
+Sample example of closuer and currying
 
+//Created a currying function
+def add(x : Int) = (y : Int) => x + y
+scala> add(3)(4)
+res0: Int = 7
+
+scala> val half = add(5)
+half: Int => Int = <function1>
+
+scala> half(3)
+res1: Int = 8
+
+//Now half is closure which can be passed as an agrument.
+scala> def complex(f: Int => Int,i : Int) = f(i)
+complex: (f: Int => Int, i: Int)Int
+
+scala> complex(half,3)
+res2: Int = 8
+
+scala> complex(half,13)
+res3: Int = 18
+
+scala> 
 
 
