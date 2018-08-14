@@ -1,0 +1,66 @@
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.catalyst.expressions.MapValues;
+
+import com.v2maestros.spark.bda.common.ExerciseUtils;
+import com.v2maestros.spark.bda.common.SparkConnection;
+
+import scala.Tuple2;
+
+public class MyProgam {
+
+
+	public static void main(String[] args) {
+		
+		Logger.getLogger("org").setLevel(Level.ERROR);
+		Logger.getLogger("akka").setLevel(Level.ERROR);
+		
+		JavaSparkContext spContext = SparkConnection.getContext();
+		//**************************************
+		//Loading and storing data
+		//***************************************
+		//Using parallalize
+		List<Integer> list = Arrays.asList(1,2,3,4,5);
+		JavaRDD<Integer> rdd = spContext.parallelize(list);
+		rdd.cache();
+		
+		System.out.println("The rdd values are : " + rdd.collect());
+		
+		//Create a rdd from file
+		
+		//JavaRDD<String> fileRdd = spContext.textFile("data/auto-data.csv");
+		//ExerciseUtils.printStringRDD(fileRdd, 5);
+		
+		//fileRdd.saveAsTextFile("data/output");
+		
+		List<Tuple2<String,Integer>> data =  Arrays.asList(new Tuple2<String, Integer>("Sachin", 100),new Tuple2<String, Integer>("Sachin", 100),new Tuple2<String, Integer>("Dada",200),new Tuple2<String, Integer>("Sachin",300),new Tuple2<String, Integer>("Dada",150));
+		JavaRDD<Tuple2<String, Integer>> rdd1 = spContext.parallelize(data);
+		
+		JavaPairRDD<String, Integer> pairRdd = JavaPairRDD.fromJavaRDD(rdd1);
+		System.out.println("The pair rdd values are  :" + pairRdd.collect());
+		
+		JavaPairRDD<String, Tuple2<Integer,Integer>> mapValues = pairRdd.mapValues(val -> new Tuple2<Integer, Integer>(val,1));
+		System.out.println("The maped values are :"+ mapValues.collect());
+		
+		JavaPairRDD<String, Tuple2<Integer, Integer>> reduceByKey = mapValues.reduceByKey((x,y) -> new Tuple2<Integer, Integer>(x._1+y._1,x._2+y._2));
+		System.out.println("The reduceByKey values are :"+ reduceByKey.collect());
+		
+		JavaRDD<String> keys = reduceByKey.keys();
+		JavaRDD<Tuple2<Integer, Integer>> values = reduceByKey.values();
+		
+		JavaRDD<Double> averageScore = values.map(val -> new Double(val._1/val._2));
+		System.out.println("The average score is " + averageScore.collect());
+		
+		reduceByKey.foreach(item -> {
+            System.out.println(item._1+":The average score is ===> "+(item._2._1/item._2._2)); 
+        });
+	}
+
+}
+
