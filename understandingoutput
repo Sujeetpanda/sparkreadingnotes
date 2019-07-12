@@ -1,0 +1,51 @@
+scala> case class User(userId: Long, userName: String)
+defined class User
+scala> case class UserActivity(userId: Long, activityTypeId: Int, timestampEpochMs: Long)
+defined class UserActivity
+scala> val LoginActivityTypeId = 0
+LoginActivityTypeId: Int = 0
+scala> val LogoutActivityTypeId = 1
+LogoutActivityTypeId: Int = 1
+                                               ^
+                                    ^
+scala> import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.RDD
+
+scala> val userRDD = sc.parallelize(Array(User(1, "Doe, John"),User(2, "Doe, Jane"),User(3, "X, Mr.")))
+userRDD: org.apache.spark.rdd.RDD[User] = ParallelCollectionRDD[0] at parallelize at <console>:30
+scala> val activityID =  sc.parallelize(
+     |    Array(UserActivity(1, LoginActivityTypeId, 1514764800L),UserActivity(2, LoginActivityTypeId, 1514808000L),
+     |      UserActivity(1, LogoutActivityTypeId, 1514829600L),
+     |      UserActivity(1, LoginActivityTypeId, 1514894400L))
+     |  )
+activityID: org.apache.spark.rdd.RDD[UserActivity] = ParallelCollectionRDD[1] at parallelize at <console>:34
+
+scala> val result = mappedUserData.leftOuterJoin(mappedActivity)
+result: org.apache.spark.rdd.RDD[(Long, (User, Option[UserActivity]))] = MapPartitionsRDD[6] at leftOuterJoin at <console>:44
+scala> result.collect()
+res1: Array[(Long, (User, Option[UserActivity]))] = Array((1,(User(1,Doe, John),Some(UserActivity(1,0,1514764800)))), (1,(User(1,Doe, John),Some(UserActivity(1,1,1514829600)))), (1,(User(1,Doe, John),Som
+e(UserActivity(1,0,1514894400)))), (2,(User(2,Doe, Jane),Some(UserActivity(2,0,1514808000)))), (3,(User(3,X, Mr.),None)))
+scala> val result = mappedUserData.leftOuterJoin(mappedActivity).filter(e => e._2._2.isDefined && e._2._2.get.activityTypeId == LoginActivityTypeId)
+result: org.apache.spark.rdd.RDD[(Long, (User, Option[UserActivity]))] = MapPartitionsRDD[10] at filter at <console>:44
+scala> result.collect()
+res2: Array[(Long, (User, Option[UserActivity]))] = Array((1,(User(1,Doe, John),Some(UserActivity(1,0,1514764800)))), (1,(User(1,Doe, John),Some(UserActivity(1,0,1514894400)))), (2,(User(2,Doe, Jane),Som
+e(UserActivity(2,0,1514808000)))))
+                                                                                                                                                                                               ^
+scala> val result = mappedUserData.leftOuterJoin(mappedActivity).filter(e => e._2._2.isDefined && e._2._2.get.activityTypeId == LoginActivityTypeId).map(e => (e._2._1.userName, e._2._2.get.timestampEpoch
+Ms))
+result: org.apache.spark.rdd.RDD[(String, Long)] = MapPartitionsRDD[15] at map at <console>:44
+scala> result.collect()
+res3: Array[(String, Long)] = Array((Doe, John,1514764800), (Doe, John,1514894400), (Doe, Jane,1514808000))
+
+
+scala> val result = mappedUserData.leftOuterJoin(mappedActivity).filter(e => e._2._2.isDefined && e._2._2.get.activityTypeId == LoginActivityTypeId).map(e => (e._2._1.userName, e._2._2.get.timestampEpoch
+Ms)).reduceByKey((a, b) => if (a < b) a else b)
+result: org.apache.spark.rdd.RDD[(String, Long)] = ShuffledRDD[21] at reduceByKey at <console>:44
+scala> result.collect()
+res4: Array[(String, Long)] = Array((Doe, John,1514764800), (Doe, Jane,1514808000))
+
+
+scala> 1514764800 < 1514894400
+res5: Boolean = true
+scala> 1514894400 < 1514808000
+res6: Boolean = false
