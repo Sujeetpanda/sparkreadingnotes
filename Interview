@@ -5,3 +5,4 @@ Then, join sub-partitions serially in a loop, "appending" to the same final resu
 3) https://stackoverflow.com/questions/45704156/what-is-the-difference-between-spark-sql-shuffle-partitions-and-spark-default-pa
 4) If i am executing 50 gb file out of that 5 gb processed.But the job stoppped. How to activate the job in best possible way.
 5) How DS does compile time check. : Lambda and JVM objects
+6) Memory Usage of Reduce Tasks : Increase the label of parallalism : park.default.parallelism
