@@ -1,0 +1,7 @@
+1) How take works on partitioned rdd. From with partition it will pick : partition 0
+2) How to do a effectively 100 gb and 80gb files join :
+First, re-partition the data and persist using partitioned tables (dataframe.write.partitionBy()). 
+Then, join sub-partitions serially in a loop, "appending" to the same final result table.(SaveMode.Overwrite)
+3) https://stackoverflow.com/questions/45704156/what-is-the-difference-between-spark-sql-shuffle-partitions-and-spark-default-pa
+4) If i am executing 50 gb file out of that 5 gb processed.But the job stoppped. How to activate the job in best possible way.
+5) How DS does compile time check. : Lambda and JVM objects
