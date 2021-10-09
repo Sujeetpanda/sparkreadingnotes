@@ -8,3 +8,11 @@ Then, join sub-partitions serially in a loop, "appending" to the same final resu
 6) Memory Usage of Reduce Tasks : Increase the label of parallalism : park.default.parallelism
 7) The recommended number of partitions is between two to three times the number of executors. 
 In our case, 600 = 10 x 24 x 2.5 would be an appropriate number of partitions. 10 nodes with 24 cpu cores
+8) ./bin/spark-submit \
+  --class <main-class> \
+  --master <master-url> \
+  --deploy-mode <deploy-mode> \       spark-submit --deploy-mode client --driver-memory xxxx  ......
+  --conf <key>=<value> \
+  ... # other options
+  <application-jar> \
+  [application-arguments]
